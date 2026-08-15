@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Syii-Fried Engloid Translator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <h1 class="title-gradient">Syii-Fried Engloid Translator</h1>
+      <p class="subtitle">Decodes established Syii forms and contextual expressions back into Standard English</p>
+    </header>
+
+    <!-- Interactive Examples -->
+    <section class="examples-section">
+      <div class="section-label">Try these Syii expressions:</div>
+      <div class="chips-wrapper">
+        <button class="example-chip" data-text="that doesn't make any soid">that doesn't make any soid</button>
+        <button class="example-chip" data-text="i rrrrr">i rrrrr</button>
+        <button class="example-chip" data-text="how are yee">how are yee</button>
+        <button class="example-chip" data-text="yo how's ramansploot">yo how's ramansploot</button>
+        <button class="example-chip" data-text="are you doneistan">are you doneistan</button>
+        <button class="example-chip" data-text="Solis's mask is really hot, but it's not about what's under the sooweh">Solis's mask... under the sooweh</button>
+        <button class="example-chip" data-text="I'm so fucking soid">I'm so fucking soid</button>
+      </div>
+    </section>
+
+    <!-- Main Translator Grid -->
+    <div class="translator-grid">
+      <!-- Input Card -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Syii-Fried Engloid</span>
+          <span class="counter" id="charCounter">0 chars</span>
+        </div>
+        <textarea id="syiiInput" class="text-area" placeholder="Type or paste Syii text here..." autofocus></textarea>
+      </div>
+
+      <!-- Output Card -->
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">English Output</span>
+          <button id="copyBtn" class="btn-icon" title="Copy translated text">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+            Copy
+          </button>
+        </div>
+        <div id="englishOutput" class="output-box">
+          <span class="placeholder-text">Translation will appear here...</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls-bar">
+      <button id="translateBtn" class="btn btn-primary">
+        Translate to English
+      </button>
+      <button id="clearBtn" class="btn btn-secondary">
+        Clear
+      </button>
+    </div>
+
+    <!-- Documentation & Rules -->
+    <section class="info-section">
+      <h2 class="info-title">How Syii Translation Works</h2>
+      <p class="info-text">
+        Syii is not a simple 1:1 cipher. It is an expressive dialect where words like <code>soid</code> and <code>sooweh</code> rely heavily on sentence context, surrounding words, and established phrasing.
+      </p>
+
+      <details>
+        <summary>View Known Translation Rules & Systems</summary>
+        <ul class="rules-list">
+          <li><strong>Known Phrases:</strong> Multi-word idioms like <code>i rrrrr</code> ("I don't know / denial of responsibility") are resolved before individual words.</li>
+          <li><strong>The Soid System:</strong> <code>soid</code> dynamically resolves to <em>song, sick, Six, sense, sing, see, Singh,</em> or <em>scene</em> depending on preceding words.</li>
+          <li><strong>The Sooweh System:</strong> Resolves as an exclamation replacement ("hell") or dynamically points to previously established nouns in context.</li>
+          <li><strong>-istan Suffix:</strong> Sentence-ending <code>-istan</code> is stripped and interpreted as terminal punctuation.</li>
+          <li><strong>-oid Suffix System:</strong> Detects <code>-ing</code>, <code>-ly</code>, or <code>on/out</code> usages based on word position and stems.</li>
+          <li><strong>High density preservation:</strong> Words with ambiguous or uncertain rules are highlighted gently rather than replaced arbitrarily.</li>
+        </ul>
+      </details>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      Syii-Fried Engloid Translator &bull; Static Web App &bull; Cloudflare Pages Ready
+    </footer>
+  </div>
+
+  <!-- Scripts loaded in modular order -->
+  <script src="dictionary.js"></script>
+  <script src="rules.js"></script>
+  <script src="translator.js"></script>
+</body>
+</html>
