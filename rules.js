@@ -1,7 +1,7 @@
 /**
  * Translation Rules & Context Engine for Syii-Fried Engloid
- * Handles contextual resolution for 'soid', 'sooweh', suffixes (-oid, -istan, -age, -goose, -sploot),
- * and phonological/written variations.
+ * Handles contextual resolution for 'soid', 'sooweh', dynamic suffixes,
+ * vowel/initial insertions (eey/Y), and phonological rolled-R parsing.
  */
 
 const SyiiRules = {
@@ -26,6 +26,9 @@ const SyiiRules = {
     }
     if (ctx.includes("make any soid") || (prev === "any" && (next === "" || next === "."))) {
       return { text: "sense", confidence: "high" };
+    }
+    if (prev === "for" || prev === "ding") {
+      return { text: "sex", confidence: "high" };
     }
     if (prev === "you" || prev === "u" || prev === "yee" || prev === "to") {
       return { text: "sing", confidence: "high" };
@@ -57,7 +60,6 @@ const SyiiRules = {
 
     // Referential noun resolution
     if (establishedNouns && establishedNouns.length > 0) {
-      // Pick the most recent relevant established noun
       const targetNoun = establishedNouns[establishedNouns.length - 1];
       return { text: targetNoun, confidence: "medium" };
     }
@@ -73,7 +75,6 @@ const SyiiRules = {
     const punctuation = word.slice(cleanWord.length);
 
     if (cleanWord.toLowerCase().endsWith("istan") && cleanWord.length > 6) {
-      // Exclude common standard English words ending in -istan
       const lower = cleanWord.toLowerCase();
       const standardIstans = ["pakistan", "afghanistan", "uzbekistan", "kazakhstan", "turkmenistan", "kyrgyzstan", "tajikistan"];
       if (!standardIstans.includes(lower)) {
@@ -89,7 +90,8 @@ const SyiiRules = {
   },
 
   /**
-   * Handles versatile '-oid' suffix transformations (-ing, -ly, on/out).
+   * Handles versatile '-oid' suffix transformations (-ing, -ly, on/out)
+   * including the sound-harmony exception (-o + ing -> -syii).
    */
   processOidSuffix(word, nextWord) {
     const lower = word.toLowerCase();
@@ -103,8 +105,7 @@ const SyiiRules = {
       const stem = word.slice(0, -3);
 
       // Rule A: Adverbial check (-ly -> -oid) e.g., realloid -> really, bubbloid -> bubbly
-      if (stem.endsWith("l") || stem.endsWith("real") || stem.endsWith("bubbl")) {
-        // Fix trailing double 'l' if needed
+      if (stem.endsWith("l") || stem.endsWith("real") || stem.endsWith("bubbl") || stem.endsWith("probb")) {
         const lyForm = stem.endsWith("l") ? stem + "y" : stem + "ly";
         return { transformed: true, text: lyForm, confidence: "high" };
       }
@@ -120,13 +121,33 @@ const SyiiRules = {
   },
 
   /**
+   * Handles phonetic insertions ('eey' insertion, 'Y' insertion) and sound reductions.
+   */
+  processPhonetics(word) {
+    let lower = word.toLowerCase();
+
+    // Occasional 'eey' insertion before first vowel (e.g., pleeyace -> place)
+    if (lower.includes("eey")) {
+      const cleaned = word.replace(/eey/i, "");
+      return { transformed: true, text: cleaned, confidence: "medium" };
+    }
+
+    // Occasional 'Y' insertion before first vowel (e.g., dyussy -> dussy)
+    if (/^[bcdfghjklmnpqrstvwxyz]y[aeiou]/i.test(word) && !["yes", "you", "your", "yee"].includes(lower)) {
+      const cleaned = word.replace(/^([bcdfghjklmnpqrstvwxyz])y/i, "$1");
+      return { transformed: true, text: cleaned, confidence: "medium" };
+    }
+
+    return { transformed: false, text: word };
+  },
+
+  /**
    * Handles morphology: -age, -goose, -sploot, rolled R patterns, and written phonology.
    */
   processMorphology(word) {
     let clean = word;
     let trailingPunct = "";
 
-    // Extract trailing punctuation
     const matchPunct = word.match(/([.,!?]+)$/);
     if (matchPunct) {
       trailingPunct = matchPunct[1];
@@ -135,18 +156,24 @@ const SyiiRules = {
 
     const lower = clean.toLowerCase();
 
+    // Check phonetic insertions first (eey / Y insertion)
+    const phonRes = this.processPhonetics(clean);
+    if (phonRes.transformed) {
+      return { text: phonRes.text + trailingPunct, confidence: phonRes.confidence };
+    }
+
     // Suffix: -age (e.g., tuffage -> tuff)
     if (lower.endsWith("age") && lower.length > 5 && !["garage", "savage", "damage", "manage", "villag"].some(w => lower.includes(w))) {
       return { text: clean.slice(0, -3) + trailingPunct, confidence: "medium" };
     }
 
-    // Suffix: -goose (e.g., jeezgoose -> Jesus, agoose -> anus handled in dict, general -goose removal)
+    // Suffix: -goose (e.g., jeezgoose -> Jesus, agoose -> anus)
     if (lower.endsWith("goose") && lower.length > 6 && lower !== "mongoose") {
       const stem = clean.slice(0, -5);
       return { text: stem + trailingPunct, confidence: "medium" };
     }
 
-    // Suffix: -sploot (playful modifier, keep base word or mark soft)
+    // Suffix: -sploot (playful modifier, e.g., Ramansploot -> Raman)
     if (lower.endsWith("sploot") && lower.length > 7) {
       const stem = clean.slice(0, -6);
       return { text: stem + trailingPunct, confidence: "high" };
@@ -158,7 +185,13 @@ const SyiiRules = {
       return { text: trimmed + trailingPunct, confidence: "high" };
     }
 
-    // Unstressed final written 'ay' / 'ae' (e.g., ideay -> idea, populae -> popular)
+    // Rolled R/D/T initial replacement representation (e.g., rrron't -> don't, rrid -> did)
+    if (/^rrr[a-z]+/i.test(clean)) {
+      if (lower.startsWith("rrron't")) return { text: "don't" + trailingPunct, confidence: "high" };
+      if (lower.startsWith("rrid")) return { text: "did" + trailingPunct, confidence: "high" };
+    }
+
+    // Unstressed final written 'ay' / 'ae'
     if (lower.endsWith("ideay")) {
       return { text: clean.slice(0, -1) + trailingPunct, confidence: "high" };
     }
